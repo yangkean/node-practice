@@ -12,7 +12,7 @@ const app = express();
 // 设置模版目录
 app.set('views', path.join(__dirname, 'views'));
 // 设置模版引擎为 ejs
-app.set('view enginge', 'ejs');
+app.set('view engine', 'ejs');
 
 // 设置静态文件目录
 app.use(express.static(path.join(__dirname, 'public')));
@@ -31,6 +31,27 @@ app.use(session({
 
 // flash 中间件，用来显示通知
 app.use(flash());
+
+// 处理表单及文件上传的中间件
+app.use(require('express-formidable')({
+  uploadDir: path.join(__dirname, 'public/img'), // 上传文件目录
+  keepExtensions: true, // 保留后缀
+}));
+
+// 设置模版全局常量
+app.locals.blog = {
+  title: pkg.name,
+  description: pkg.description,
+};
+
+// 添加模版必须的三个变量
+app.use(function(req, res, next) {
+  res.locals.user = req.session.user;
+  res.locals.success = req.flash('success').toString();
+  res.locals.error = req.flash('error').toString();
+
+  next();
+});
 
 // 路由
 routes(app);
